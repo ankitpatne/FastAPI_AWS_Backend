@@ -1,5 +1,5 @@
 import cv2
-import boto3  # For S3 interaction
+import boto3 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import time
@@ -11,7 +11,6 @@ import random
 from pymongo import MongoClient
 import requests
 import numpy
-# Import Pillow
 import requests
 from PIL import Image
 from io import BytesIO
@@ -29,9 +28,9 @@ VIDEO_URL = "http://192.168.24.223:8081/out.jpg?q=30&id=0.06486201992911766"
 
 # MongoDB connection
 client = MongoClient(
-    "mongodb+srv://ankit:doraemon123@metadata.tjnldk9.mongodb.net/?retryWrites=true&w=majority"
+    "YOUR_MONGODB_CONNECTION_STRING"
 )
-db = client["renegan"]
+db = client["YOUR_DATABASE_NAME"]
 
 
 # Dictionary to store the first frame of each hour which will be used for displacement detection
@@ -151,6 +150,9 @@ async def process_stream():
         current_time = time.time()
         frames.append((frame, current_time))
 
+        ##########################################################
+        ####### Alternative approach to detect crime scenes #######
+
         # current_hour = datetime.now().hour
 
         # # If this is the first frame of the current hour
@@ -164,6 +166,8 @@ async def process_stream():
         #     if detect_cctv_fall(first_frames[current_hour], frame):
         #         # The frames differ, add an object to MongoDB
         #         collection.insert_one({"hour": current_hour, "timestamp": current_time})
+
+        ###########################################################
 
         if detect_cctv_fall(frames[0][0], frame):
             # The frames differ
@@ -202,9 +206,9 @@ async def process_stream():
             video_file = save_frames_as_video(frames)
             date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             s3_client.upload_file(
-                video_file, "ankit-s3-1", f"complete_footage/{date_str}.mp4"
+                video_file, "YOUR_S3_BUCKET_NAME", f"complete_footage/{date_str}.mp4"
             )
-            # s3_complete_footage_url = f"https://ankit-s3-1.s3.ap-south-1.amazonaws.com/complete_footage/{date_str}.mp4"
+            # s3_complete_footage_url = f"https://YOUR_S3_BUCKET_NAME.s3.ap-south-1.amazonaws.com/complete_footage/{date_str}.mp4"
             last_upload_time = current_time
             # upload to mongoDB
             # db["complete_footage"].insert_one({"timestamp": current_time, "url": s3_complete_footage_url, "cameraId": "123456",})
@@ -230,6 +234,9 @@ async def process_stream():
             start_time = crime_start_time - 3
             end_time = crime_end_time + 3
             crime_scenes.append([start_time, end_time])
+
+            ##########################################################
+            ######### ALTERNATIVE APPROACH #########
             # trimmed_video = trim_video(frames, start_time, end_time)
             # timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             # video_filename = f"Dhishkyau_Cam_crime_video_{timestamp_str}.mp4"
@@ -238,12 +245,15 @@ async def process_stream():
             # is_crime_detected = True
             # frame_count_after_crime = 0
             # frame_count_after_crime += 1
+            ##########################################################
+            
             generate_report(event_details)
 
             crime_detected = False
             crime_end_time = None
             crime_start_time = time.time()
-
+        
+        #######################################################################
             ##### APPROACH NO. 2 --- BEGIN #####
 
             # if frame_count_after_crime >= 100:
@@ -278,8 +288,9 @@ async def process_stream():
         # exit the loop automatically after 10 secs
 
         #### APPROACH NO. 2 --- END #####
+        #######################################################################
 
-        if frame_count >= 500:
+        if frame_count >= 500:  ### For testing purposes only. Break the loop after 500 frames ###
             # if is_crime_detected:
             #     trimmed_video = trim_video(frames, start_time, current_time)
             #     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -302,7 +313,7 @@ async def process_stream():
         timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         video_filename = f"crime_scenes/crime_scene_{timestamp_str}.mp4"
         s3_client.upload_file(trimmed_video, "ankit-s3-1", video_filename)
-        s3_crime_scene_url = f"https://ankit-s3-1.s3.ap-south-1.amazonaws.com/crime_scenes/crime_scene_{video_filename}"
+        s3_crime_scene_url = f"YOUR_S3_BUCKET_URL/crime_scenes/crime_scene_{video_filename}"
         crime_scene_urls.append(s3_crime_scene_url)
 
     # if camera_displaced:
@@ -315,7 +326,7 @@ async def process_stream():
         db["displacement_notification"].insert_one(
             {
                 "timestamp": cam_disp_time,
-                "cameraId": "123456",
+                "cameraId": "123456", # random cam ID for testing
             }
         )
 
