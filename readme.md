@@ -1,6 +1,6 @@
 # Renegan
 
-Renegan is an innovative solution developed for the Police officers, aimed at enhancing public safety through intelligent geo-tagging of privately owned cameras. This repository contains the codebase for Renegan, facilitating real-time processing of CCTV video streams, crime detection, and incident reporting.
+Renegan is an innovative solution developed to serve the Police, aimed at enhancing public safety through intelligent geo-tagging of privately owned cameras. This repository contains the codebase for Renegan, facilitating real-time processing of CCTV video streams, crime detection, and incident reporting.
 
 ## Tech Stack
 
